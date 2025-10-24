@@ -114,37 +114,30 @@
       <button class="btn-primary" type="submit">Validate selection</button>
     </form>
 
-    <div id="confirm" class="hidden">
-      <p>Do you confirm your attendance?</p>
-      <button class="btn-primary" onclick="confirmAttendance(true)">YES, I will attend</button>
-      <button class="btn-secondary" onclick="confirmAttendance(false)">NO, unfortunately I won’t</button>
-    </div>
-
     <form id="wish-form" class="hidden">
       <label for="wish">Leave a message for the couple:</label>
       <textarea id="wish" placeholder="Write your wishes here..."></textarea>
-      <button class="btn-primary" type="submit" id="sendWishBtn">Send my wishes</button>
+      <button class="btn-primary" type="submit" id="sendWishBtn">Send</button>
     </form>
     <div id="successMsg" class="success hidden">
-      Your wishes have been sent. You can now download your invitation card below.
+      Thank you! You can now download your invitation card and the hotel list below.
     </div>
     <div id="download-section" class="download-btns hidden">
       <button class="btn-primary" onclick="downloadInvitationPDF()">📄 Download my invitation card</button>
+      <button class="btn-secondary" onclick="downloadHotelsPDF()">🏨 Download the hotel list</button>
     </div>
   </div>
 
   <!-- Hidden Formspree integration -->
   <form id="hidden-form" action="https://formspree.io/f/xdorqjga" method="POST" class="hidden">
     <input type="hidden" name="name">
-    <input type="hidden" name="attendance">
-    <input type="hidden" name="wish">
     <input type="hidden" name="selectedFamily">
+    <input type="hidden" name="wish">
   </form>
 
   <script>
     const { jsPDF } = window.jspdf;
 
-    // Remplace cette liste par ta liste complète
     const guests = [
       {name:"Moraima Lys Colimon", seats:1, family:["Moraima Lys Colimon"]},
       {name:"Phenite Thermilien", seats:1, family:["Phenite Thermilien"]},
@@ -172,7 +165,6 @@
     const receptionAddress = "769 Washington St, Stoughton, MA 02072, USA";
 
     let currentGuest = null;
-    let attendanceStatus = null;
 
     function normalize(str) {
       return str.trim().toLowerCase();
@@ -181,36 +173,43 @@
     function checkGuest() {
       const input = document.getElementById("name").value;
       const result = document.getElementById("result");
-      const confirmBox = document.getElementById("confirm");
-      const wishForm = document.getElementById("wish-form");
       const selectFamilyForm = document.getElementById("select-family-form");
       const familyListDiv = document.getElementById("family-list");
+      const wishForm = document.getElementById("wish-form");
+      const downloadSection = document.getElementById("download-section");
+      const successMsg = document.getElementById("successMsg");
 
+      // Reset all
       result.classList.add("hidden");
-      confirmBox.classList.add("hidden");
-      wishForm.classList.add("hidden");
       selectFamilyForm.classList.add("hidden");
-      document.getElementById("download-section").classList.add("hidden");
-      document.getElementById("successMsg").classList.add("hidden");
+      wishForm.classList.add("hidden");
+      downloadSection.classList.add("hidden");
+      successMsg.classList.add("hidden");
 
       if (!input) {
         alert("Please enter a name.");
         return;
       }
 
-      const found = guests.find(g => normalize(input).includes(normalize(g.name)) || normalize(g.name).includes(normalize(input)));
-
+      const found = guests.find(g => normalize(input) === normalize(g.name));
       if (found) {
         currentGuest = found;
         result.innerHTML = `<strong>${found.name}</strong><br>
           Seats reserved: ${found.seats}<br>
           ${found.family.length > 1 ? "Family: <ul class='family-list'>" + found.family.map(m => `<li>${m}</li>`).join("") + "</ul>" : ""}`;
         result.classList.remove("hidden");
-        // Show selection of family
-        familyListDiv.innerHTML = found.family.map((member, idx) =>
-          `<label><input type="checkbox" name="family-member" value="${member}" checked> ${member}</label><br>`
-        ).join("");
-        selectFamilyForm.classList.remove("hidden");
+
+        // Show family selection only if more than one in family
+        if (found.family.length > 1) {
+          familyListDiv.innerHTML = found.family.map((member, idx) =>
+            `<label><input type="checkbox" name="family-member" value="${member}" checked> ${member}</label><br>`
+          ).join("");
+          selectFamilyForm.classList.remove("hidden");
+        } else {
+          // For single person, auto-select themselves and go straight to wish form
+          currentGuest.selectedFamily = found.family;
+          wishForm.classList.remove("hidden");
+        }
       } else {
         result.innerHTML = "⚠️ Sorry, this name is not on the guest list.";
         result.classList.remove("hidden");
@@ -222,25 +221,16 @@
       const checked = Array.from(document.querySelectorAll('input[name="family-member"]:checked')).map(cb => cb.value);
       currentGuest.selectedFamily = checked;
       document.getElementById("select-family-form").classList.add("hidden");
-      document.getElementById("confirm").classList.remove("hidden");
+      document.getElementById("wish-form").classList.remove("hidden");
     });
-
-    function confirmAttendance(isYes) {
-      if (!currentGuest) return;
-      const wishForm = document.getElementById("wish-form");
-      attendanceStatus = isYes ? "Attending" : "Not attending";
-      wishForm.classList.remove("hidden");
-      document.getElementById("confirm").classList.add("hidden");
-    }
 
     document.getElementById("wish-form").addEventListener("submit", function(e) {
       e.preventDefault();
       if (!currentGuest) return;
       const hiddenForm = document.getElementById("hidden-form");
       hiddenForm.elements["name"].value = currentGuest.name;
-      hiddenForm.elements["attendance"].value = attendanceStatus;
-      hiddenForm.elements["wish"].value = document.getElementById("wish").value;
       hiddenForm.elements["selectedFamily"].value = (currentGuest.selectedFamily || []).join(', ');
+      hiddenForm.elements["wish"].value = document.getElementById("wish").value;
       fetch(hiddenForm.action, {
         method: "POST",
         headers: { "Accept": "application/json" },
@@ -256,23 +246,18 @@
       if (!currentGuest) return;
       const doc = new jsPDF();
       const burgundy = [96,12,12];
-
       doc.setFillColor(...burgundy);
       doc.rect(0,0,210,40,"F");
-
       doc.setFontSize(22);
       doc.setTextColor(255,255,255);
       doc.text("Darnelle & Donovan", 105, 25, {align:"center"});
-
       doc.setTextColor(...burgundy);
       doc.setFontSize(18);
       doc.text("Invitation Card", 105, 60, {align:"center"});
-
       doc.setFontSize(14);
       doc.setTextColor(0,0,0);
       doc.text(`Guest: ${currentGuest.name}`, 20, 80);
       doc.text(`Seats reserved: ${currentGuest.seats}`, 20, 95);
-
       if (currentGuest.selectedFamily && currentGuest.selectedFamily.length > 0) {
         doc.text("Confirmed Present:", 20, 110);
         currentGuest.selectedFamily.forEach((m,i) => {
@@ -284,13 +269,11 @@
           doc.text(`- ${m}`, 30, 120 + i*10);
         });
       }
-
       // Wedding details
       let y = 140 + ((currentGuest.selectedFamily ? currentGuest.selectedFamily.length : currentGuest.family.length) * 10);
       doc.setFontSize(13);
       doc.setTextColor(...burgundy);
       doc.text("Wedding Details:", 20, y);
-
       doc.setFontSize(12);
       doc.setTextColor(0,0,0);
       doc.text(`Date & Time: ${weddingDate}`, 20, y+12);
@@ -298,26 +281,34 @@
       doc.text(churchAddress, 25, y+30);
       doc.text("Reception Address:", 20, y+42);
       doc.text(receptionAddress, 25, y+50);
-
-      // Hotels (all visible, page break if needed)
+      // Hotels
       y += 70;
       doc.setFontSize(13);
       doc.setTextColor(...burgundy);
       doc.text("Hotel Suggestions (guests are responsible for their own booking):", 20, y);
-
       doc.setFontSize(11);
       doc.setTextColor(0,0,0);
       let hotelY = y + 12;
       hotels.forEach((h, i) => {
-        if (hotelY > 280) { // Page break if needed
-          doc.addPage();
-          hotelY = 20;
-        }
+        if (hotelY > 280) { doc.addPage(); hotelY = 20; }
         doc.text(`- ${h}`, 22, hotelY, {maxWidth:170});
         hotelY += 8;
       });
-
       doc.save(`Invitation_${currentGuest.name}.pdf`);
+    }
+
+    function downloadHotelsPDF() {
+      const doc = new jsPDF();
+      const burgundy = [96,12,12];
+      doc.setFontSize(18);
+      doc.setTextColor(...burgundy);
+      doc.text("Hotel Suggestions", 105, 20, {align:"center"});
+      doc.setFontSize(12);
+      doc.setTextColor(0,0,0);
+      hotels.forEach((h, i) => {
+        doc.text(`- ${h}`, 20, 35 + i*10, {maxWidth:170});
+      });
+      doc.save("Hotels_List.pdf");
     }
   </script>
 </body>
