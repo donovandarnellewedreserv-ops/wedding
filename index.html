@@ -107,14 +107,94 @@
     const hiddenForm = document.getElementById('hidden-form');
     const confirmationMsg = document.getElementById('confirmation-message');
 
-    const guests = [...]; // (garde ta liste complète ici)
-    const hotels = [...]; // idem
+    const guests = [
+      {name:"Moraima Lys Colimon", seats:1, family:["Moraima Lys Colimon"]},
+      {name:"Phenite Thermilien", seats:1, family:["Phenite Thermilien"]},
+      {name:"Taelle Chery", seats:1, family:["Taelle Chery"]},
+      {name:"Roseline Pierre", seats:1, family:["Roseline Pierre"]},
+      {name:"Balnave Sarette", seats:4, family:["Marie Fiance Sarette", "Mehola Sarette", "Noah Sarette", "Balnave Sarette"]},
+      {name:"Marah Mondesir", seats:1, family:["Marah Mondesir"]},
+      {name:"Bebeto Labady", seats:2, family:["Bebeto Labady", "Naomie Labady"]},
+      {name:"Sebastien Pierre", seats:1, family:["Sebastien Pierre"]},
+      {name:"Judith Sanon", seats:3, family:["Marvein Sanon", "Miguel Sanon", "Judith Sanon"]},
+      {name:"Melchior Cyprien", seats:2, family:["Melchior Cyprien", "Erna Cyprien"]},
+      {name:"Nezilia Cayard", seats:1, family:["Nezilia Cayard"]},
+      {name:"Nery Cayard", seats:1, family:["Nery Cayard"]},
+      {name:"Yolette Beauvoir", seats:2, family:["Beauvoir Duthil", "Yolette Duthil"]},
+      {name:"Evein Durandis", seats:2, family:["Perette Durandis", "Evein Durandis"]},
+      {name:"Renel Durandis", seats:4, family:["Renel Durandis", "Gessie Durandis", "Jason Durandis", "Joana Durandis"]},
+      {name:"Rose Gaensly Extrat", seats:1, family:["Rose Gaensly Extrat"]},
+      {name:"Nelly Begein", seats:1, family:["Nelly Begein"]},
+      {name:"Richard Begein", seats:4, family:["Richard Begein", "Angeline Begein", "Ivan Begein", "Jonathan Begein"]},
+      {name:"Saul Lèlene", seats:2, family:["Saul Lelene", "Saul Michelet"]},
+      {name:"Grandma Tessier", seats:1, family:["Grandma Tessier"]},
+      {name:"Jean Edward Cayard", seats:2, family:["Jean Edward Cayard", "Liliane Cayard"]},
+      {name:"Marie Josée Turenne", seats:1, family:["Marie Josée Turenne"]},
+      {name:"Raymonde Turenne", seats:1, family:["Raymonde Turenne"]},
+      {name:"Scherly Etienne", seats:2, family:["Scherly Etienne", "Bryan Etienne"]},
+      {name:"Perla Mbeya", seats:2, family:["Perla Mbeya", "Abram Mbeya"]},
+      {name:"Claude Cayard", seats:1, family:["Claude Cayard"]},
+      {name:"Karly Cayard", seats:1, family:["Karly Cayard"]},
+      {name:"Myrtha Vieux", seats:1, family:["Myrtha Vieux"]},
+      {name:"Francesca Lima", seats:1, family:["Francesca Lima"]},
+      {name:"Ann Kristel Deronvil", seats:1, family:["Ann Kristel Deronvil"]},
+      {name:"Barbara Pierre", seats:4, family:["Barbara Pierre", "Adamael Pierre", "Germson Pierre", "Maude Marlie Pierre"]},
+      {name:"Jennifer Alexis Ducheine", seats:2, family:["Jennifer Alexis", "Le Duc Ducheine"]},
+      {name:"Jude Altenor", seats:1, family:["Jude Altenor"]},
+      {name:"Bidley Beauvin", seats:1, family:["Bidley Beauvin"]},
+      {name:"Jean Esdras", seats:1, family:["Jean Esdras"]},
+      {name:"Doris Doleyres", seats:1, family:["Doris Doleyres"]},
+      {name:"Marjorie Dimanche", seats:4, family:["Marjorie", "Winston", "Nathaniel", "Aniel"]},
+      {name:"Emmanuella Moyo", seats:2, family:["Christian Moyo", "Emmanuella Moyo"]},
+      {name:"Yoletta Duthil", seats:1, family:["Yoletta Duthil"]},
+      {name:"Myrlande Berlanger", seats:2, family:["Myrlande Berlanger", "Myrvine Berlanger"]},
+      {name:"Marie France Halaby", seats:1, family:["Marie France Halaby"]},
+      {name:"Laerte Pierre", seats:1, family:["Laerte Pierre"]},
+      {name:"Richardson Lincy", seats:1, family:["Richardson Lincy"]},
+      {name:"Tamara Cadet", seats:1, family:["Tamara Cadet"]},
+      {name:"Lordure Inera", seats:2, family:["Lordure Inera", "Chrislo Inera"]},
+      {name:"Erland Sanon", seats:2, family:["Erland Sanon", "Paulaine Sanon"]},
+      {name:"Claire Johnson", seats:4, family:["Claire Johnson", "Roger Johnson", "Jolie Johnson", "Zoé Johnson"]},
+      {name:"Berthold Victor", seats:2, family:["Berthold Victor", "Keisha Victor"]},
+      {name:"Ketia Vital", seats:1, family:["Ketia Vital"]},
+      {name:"Placide Turenne", seats:1, family:["Placide Turenne"]},
+      {name:"Pierre Hector Turenne", seats:1, family:["Pierre Hector Turenne"]},
+      {name:"Marie Carmelle Biron", seats:1, family:["Marie Carmelle Biron"]},
+      {name:"Daniel Sully", seats:1, family:["Daniel Sully"]},
+      {name:"Guirlaine Saul", seats:5, family:["Guirlaine Saul", "Michelet Saul", "Mitch Saul", "Jenny Saul", "Carmelite Tessier"]},
+      {name:"Daniel Samedi", seats:4, family:["Jasmine Samedi", "Dorlane Samedi", "Manuela Samedi", "Daniel Samedi"]},
+      {name:"Sabrina Samedi", seats:4, family:["Triniti Samedi", "Guimayca Samedi", "Sarah Samedi", "Sabrina Samedi"]},
+      {name:"Jean Marie Samedi", seats:3, family:["Nathalie Samedi", "Nathaniel Leon", "Jean Marie Samedi"]},
+      {name:"Maillejory Samedi", seats:2, family:["Maillejory Samedi", "Jaelle Samedi"]},
+      {name:"Richard Bégein", seats:6, family:["Angeline Bégein", "Nelly Bégein", "Jonathan", "Ivan", "Cacou", "Richard Bégein"]},
+      {name:"Emmanuel Samedi", seats:2, family:["Nathan Samedi", "Carl Samedi"]},
+      {name:"Mr & Mme Cherichel", seats:2, family:["Myrtho Cherichel", "Mr Cherichel"]},
+      {name:"Rolph Alain Duthil", seats:1, family:["Rolph Alain Duthil"]},
+      {name:"Florence Sully", seats:2, family:["Florence Sully", "Frantz Sully"]},
+      {name:"Stéphane Geneus", seats:1, family:["Stéphane Geneus"]},
+      {name:"Stephania Geneus", seats:3, family:["Stephania Geneus", "Franck Geneus", "Abigail Geneus"]},
+      {name:"Necker Dorlice", seats:1, family:["Necker Dorlice"]}
+    ];
+
+    const hotels = [
+      "Hilton Garden Inn Foxborough Patriot Place: 27 patriot place, Foxboro, MA, 02035",
+      "Red Roof Inn Plus+ Boston - Mansfield/Foxboro: 60 Forbes Blvd, Mansfield, MA 02048",
+      "Comfort Inn and Suites Plainville – Foxboro: 164 Washington St, Plainville, MA, 02762",
+      "Best Western The Inn at Sharon / Foxboro: 395 Old Post Rd, Sharon, MA, 02067",
+      "Hampton Inn Boston – Norwood: 494 Providence Highway (Rt 1), Norwood, MA, 02062",
+      "Courtyard by Marriott Boston: 300 River Ridge Dr, Norwood, MA, 02062",
+      "Holiday Inn Express Brockton - Boston: 405 West Gate Dr, Brockton, MA, 02301",
+      "Hyatt Place Boston/Braintree: 50 Forbes Rd, Braintree, MA, 02184",
+      "Holiday Inn Express and Suites Boston South - Randolph by IHG: 60 Mazzeo Dr, Randolph, MA, 02368",
+      "Comfort Inn Randolph – Boston: 1374 N Main Street, Randolph, MA, 02368"
+    ];
+
     const weddingDate = "Sunday, December 28, 2025. At 3PM.";
     const churchAddress = "Foxboro SDA Church\n308 Central St, Foxborough, MA 02035, USA";
     const receptionAddress = "769 Washington St, Stoughton, MA 02072, USA";
     let currentGuest = null;
 
-    function normalize(str) { return str.trim().toLowerCase(); }
+    function normalize(str) { return (str || '').trim().toLowerCase(); }
 
     function showConfirmationMessage(success = true) {
       confirmationMsg.classList.remove('hidden');
@@ -136,8 +216,10 @@
           headers: { 'Accept': 'application/json' }
         });
         showConfirmationMessage(response.ok);
-      } catch {
+        return response.ok;
+      } catch (err) {
         showConfirmationMessage(false);
+        return false;
       }
     }
 
@@ -150,6 +232,7 @@
       const downloadSection = document.getElementById("download-section");
       const successMsg = document.getElementById("successMsg");
 
+      // Reset UI
       result.classList.add("hidden");
       selectFamilyForm.classList.add("hidden");
       familyListDiv.innerHTML = "";
@@ -157,7 +240,10 @@
       downloadSection.classList.add("hidden");
       successMsg.classList.add("hidden");
 
-      if (!input) return alert("Please enter a name.");
+      if (!input) {
+        alert("Please enter a name.");
+        return;
+      }
       const found = guests.find(g => normalize(input) === normalize(g.name));
       if (!found) {
         result.textContent = "⚠️ Sorry, the name is not on the list.";
@@ -168,9 +254,10 @@
       result.innerHTML = `<strong>${found.name}</strong><br>Seats reserved: ${found.seats}`;
       result.classList.remove("hidden");
 
+      // Show checkboxes for family members when applicable
       if (found.family.length > 1) {
         familyListDiv.innerHTML = found.family.map(member =>
-          `<label><input type="checkbox" name="family-member" value="${member}"> ${member}</label><br>`
+          `<label class="family-list"><input type="checkbox" name="family-member" value="${member}"> ${member}</label>`
         ).join("");
         selectFamilyForm.classList.remove("hidden");
       } else {
@@ -178,22 +265,26 @@
       }
     }
 
-    document.getElementById("select-family-form").addEventListener("submit", async e => {
+    document.getElementById("select-family-form").addEventListener("submit", async function(e) {
       e.preventDefault();
       const checked = Array.from(document.querySelectorAll('input[name="family-member"]:checked')).map(cb => cb.value);
       currentGuest.selectedFamily = checked;
-      await sendToFormspree(currentGuest.name, checked.join(', '));
+      const ok = await sendToFormspree(currentGuest.name, checked.join(', '));
       document.getElementById("select-family-form").classList.add("hidden");
-      document.getElementById("download-section").classList.remove("hidden");
-      document.getElementById("successMsg").classList.remove("hidden");
+      if (ok) {
+        document.getElementById("download-section").classList.remove("hidden");
+        document.getElementById("successMsg").classList.remove("hidden");
+      }
     });
 
     async function confirmAlone() {
       currentGuest.selectedFamily = [currentGuest.name];
-      await sendToFormspree(currentGuest.name, currentGuest.name);
+      const ok = await sendToFormspree(currentGuest.name, currentGuest.name);
       document.getElementById("confirm-alone").classList.add("hidden");
-      document.getElementById("download-section").classList.remove("hidden");
-      document.getElementById("successMsg").classList.remove("hidden");
+      if (ok) {
+        document.getElementById("download-section").classList.remove("hidden");
+        document.getElementById("successMsg").classList.remove("hidden");
+      }
     }
 
     function downloadInvitationPDF() {
@@ -213,9 +304,11 @@
       doc.text(`Guest: ${currentGuest.name}`, 20, 80);
       const nb = currentGuest.selectedFamily ? currentGuest.selectedFamily.length : 1;
       doc.text(`Seats reserved: ${nb}`, 20, 95);
-      if (currentGuest.selectedFamily?.length) {
+      if (currentGuest.selectedFamily && currentGuest.selectedFamily.length > 0) {
         doc.text("Confirmed Present:", 20, 110);
-        currentGuest.selectedFamily.forEach((m,i) => doc.text(`- ${m}`, 30, 120 + i*10));
+        currentGuest.selectedFamily.forEach((m,i) => {
+          doc.text(`- ${m}`, 30, 120 + i*10);
+        });
       }
       let y = 140 + (nb * 10);
       doc.setFontSize(13);
@@ -235,7 +328,7 @@
       doc.setFontSize(11);
       doc.setTextColor(0,0,0);
       let hotelY = y + 12;
-      hotels.forEach(h => {
+      hotels.forEach((h) => {
         if (hotelY > 280) { doc.addPage(); hotelY = 20; }
         doc.text(`- ${h}`, 22, hotelY, {maxWidth:170});
         hotelY += 8;
