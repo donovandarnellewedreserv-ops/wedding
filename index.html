@@ -50,13 +50,6 @@
     .hidden { display: none; }
     .download-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
     .success { color: #2a7a2a; font-weight: bold; margin-top: 20px; text-align: center; }
-    #confirmation-message {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #008000;
-    }
   </style>
 </head>
 <body>
@@ -73,39 +66,28 @@
       <button class="btn-primary" onclick="checkGuest()">Send</button>
       <div id="result" class="result hidden"></div>
     </div>
-
     <form id="select-family-form" class="hidden">
       <label for="family-list">Who will be present with you?</label>
       <div id="family-list"></div>
       <button class="btn-primary" type="submit">Confirmed</button>
     </form>
-
     <div id="confirm-alone" class="hidden" style="margin:20px 0;">
       <button class="btn-primary" onclick="confirmAlone()">Confirmed</button>
     </div>
-
     <div id="download-section" class="download-btns hidden">
       <button class="btn-primary" onclick="downloadInvitationPDF()">📄 Download my invitation card</button>
     </div>
-
     <div id="successMsg" class="success hidden">
       Your invitation card is ready!
     </div>
-
-    <!-- ✅ Nouveau formulaire Formspree -->
-    <form id="hidden-form" action="https://formspree.io/f/manprrje" method="POST" class="hidden">
+    <!-- Formspree hidden form for email notification -->
+    <form id="hidden-form" action="https://formspree.io/f/xdorqjga" method="POST" class="hidden">
       <input type="hidden" name="name">
       <input type="hidden" name="presentList">
     </form>
-
-    <!-- ✅ Message de confirmation -->
-    <div id="confirmation-message" class="hidden">✅ Merci ! Votre réponse a bien été envoyée 💌</div>
   </div>
-
   <script>
     const { jsPDF } = window.jspdf;
-    const hiddenForm = document.getElementById('hidden-form');
-    const confirmationMsg = document.getElementById('confirmation-message');
 
     const guests = [
       {name:"Moraima Lys Colimon", seats:1, family:["Moraima Lys Colimon"]},
@@ -194,34 +176,7 @@
     const receptionAddress = "769 Washington St, Stoughton, MA 02072, USA";
     let currentGuest = null;
 
-    function normalize(str) { return (str || '').trim().toLowerCase(); }
-
-    function showConfirmationMessage(success = true) {
-      confirmationMsg.classList.remove('hidden');
-      confirmationMsg.style.color = success ? "#008000" : "red";
-      confirmationMsg.textContent = success
-        ? "✅ Merci ! Votre réponse a bien été envoyée 💌"
-        : "❌ Une erreur est survenue. Réessayez plus tard.";
-      setTimeout(() => confirmationMsg.classList.add('hidden'), 6000);
-    }
-
-    async function sendToFormspree(name, presentList) {
-      hiddenForm.querySelector('input[name="name"]').value = name;
-      hiddenForm.querySelector('input[name="presentList"]').value = presentList;
-      const formData = new FormData(hiddenForm);
-      try {
-        const response = await fetch(hiddenForm.action, {
-          method: 'POST',
-          body: formData,
-          headers: { 'Accept': 'application/json' }
-        });
-        showConfirmationMessage(response.ok);
-        return response.ok;
-      } catch (err) {
-        showConfirmationMessage(false);
-        return false;
-      }
-    }
+    function normalize(str) { return str.trim().toLowerCase(); }
 
     function checkGuest() {
       const input = document.getElementById("name").value;
@@ -231,8 +186,7 @@
       const confirmAloneDiv = document.getElementById("confirm-alone");
       const downloadSection = document.getElementById("download-section");
       const successMsg = document.getElementById("successMsg");
-
-      // Reset UI
+      // Reset
       result.classList.add("hidden");
       selectFamilyForm.classList.add("hidden");
       familyListDiv.innerHTML = "";
@@ -253,11 +207,10 @@
       currentGuest = found;
       result.innerHTML = `<strong>${found.name}</strong><br>Seats reserved: ${found.seats}`;
       result.classList.remove("hidden");
-
-      // Show checkboxes for family members when applicable
+      // Affichage des cases à cocher NON cochées par défaut
       if (found.family.length > 1) {
         familyListDiv.innerHTML = found.family.map(member =>
-          `<label class="family-list"><input type="checkbox" name="family-member" value="${member}"> ${member}</label>`
+          `<label><input type="checkbox" name="family-member" value="${member}"> ${member}</label><br>`
         ).join("");
         selectFamilyForm.classList.remove("hidden");
       } else {
@@ -265,26 +218,44 @@
       }
     }
 
-    document.getElementById("select-family-form").addEventListener("submit", async function(e) {
+    // Envoi email + carte dispo après confirmation (groupe)
+    document.getElementById("select-family-form").addEventListener("submit", function(e) {
       e.preventDefault();
       const checked = Array.from(document.querySelectorAll('input[name="family-member"]:checked')).map(cb => cb.value);
       currentGuest.selectedFamily = checked;
-      const ok = await sendToFormspree(currentGuest.name, checked.join(', '));
+
+      // ENVOI VERS FORMSPREE
+      const hiddenForm = document.getElementById("hidden-form");
+      hiddenForm.elements["name"].value = currentGuest.name;
+      hiddenForm.elements["presentList"].value = checked.join(', ');
+      fetch(hiddenForm.action, {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: new FormData(hiddenForm)
+      });
+
       document.getElementById("select-family-form").classList.add("hidden");
-      if (ok) {
-        document.getElementById("download-section").classList.remove("hidden");
-        document.getElementById("successMsg").classList.remove("hidden");
-      }
+      document.getElementById("download-section").classList.remove("hidden");
+      document.getElementById("successMsg").classList.remove("hidden");
     });
 
-    async function confirmAlone() {
+    // Envoi email + carte dispo après confirmation (seul)
+    function confirmAlone() {
       currentGuest.selectedFamily = [currentGuest.name];
-      const ok = await sendToFormspree(currentGuest.name, currentGuest.name);
+
+      // ENVOI VERS FORMSPREE
+      const hiddenForm = document.getElementById("hidden-form");
+      hiddenForm.elements["name"].value = currentGuest.name;
+      hiddenForm.elements["presentList"].value = currentGuest.name;
+      fetch(hiddenForm.action, {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: new FormData(hiddenForm)
+      });
+
       document.getElementById("confirm-alone").classList.add("hidden");
-      if (ok) {
-        document.getElementById("download-section").classList.remove("hidden");
-        document.getElementById("successMsg").classList.remove("hidden");
-      }
+      document.getElementById("download-section").classList.remove("hidden");
+      document.getElementById("successMsg").classList.remove("hidden");
     }
 
     function downloadInvitationPDF() {
@@ -302,6 +273,7 @@
       doc.setFontSize(14);
       doc.setTextColor(0,0,0);
       doc.text(`Guest: ${currentGuest.name}`, 20, 80);
+      // Affiche le nombre de personnes sélectionnées
       const nb = currentGuest.selectedFamily ? currentGuest.selectedFamily.length : 1;
       doc.text(`Seats reserved: ${nb}`, 20, 95);
       if (currentGuest.selectedFamily && currentGuest.selectedFamily.length > 0) {
@@ -310,6 +282,7 @@
           doc.text(`- ${m}`, 30, 120 + i*10);
         });
       }
+      // Wedding details
       let y = 140 + (nb * 10);
       doc.setFontSize(13);
       doc.setTextColor(...burgundy);
@@ -321,6 +294,7 @@
       doc.text(churchAddress, 25, y+30);
       doc.text("Reception Address:", 20, y+42);
       doc.text(receptionAddress, 25, y+50);
+      // Hotels
       y += 70;
       doc.setFontSize(13);
       doc.setTextColor(...burgundy);
@@ -328,7 +302,7 @@
       doc.setFontSize(11);
       doc.setTextColor(0,0,0);
       let hotelY = y + 12;
-      hotels.forEach((h) => {
+      hotels.forEach((h, i) => {
         if (hotelY > 280) { doc.addPage(); hotelY = 20; }
         doc.text(`- ${h}`, 22, hotelY, {maxWidth:170});
         hotelY += 8;
