@@ -31,67 +31,25 @@
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-    input, textarea, button {
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-weight: bold; margin-bottom: 8px; }
+    input, button {
       width: 100%;
       padding: 10px;
       border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 1rem;
     }
-    button {
-      cursor: pointer;
-      border: none;
-      transition: 0.3s;
-    }
-    .btn-primary {
-      background: #6B7B59;
-      color: white;
-    }
-    .btn-primary:hover {
-      background: #556645;
-    }
-    .btn-secondary {
-      background: #600C0C;
-      color: white;
-    }
-    .btn-secondary:hover {
-      background: #400808;
-    }
-    .result {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 10px;
-      background: #f1f1f1;
-    }
-    .family-list {
-      margin: 10px 0;
-      padding-left: 20px;
-    }
+    button { cursor: pointer; border: none; transition: 0.3s; }
+    .btn-primary { background: #6B7B59; color: white; }
+    .btn-primary:hover { background: #556645; }
+    .btn-secondary { background: #600C0C; color: white; }
+    .btn-secondary:hover { background: #400808; }
+    .result { margin-top: 20px; padding: 15px; border-radius: 10px; background: #f1f1f1; }
+    .family-list { margin: 10px 0; padding-left: 20px; }
     .hidden { display: none; }
-    textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-    .success {
-      color: #2a7a2a;
-      font-weight: bold;
-      margin-top: 20px;
-      text-align: center;
-    }
-    .download-btns {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
+    .download-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    .success { color: #2a7a2a; font-weight: bold; margin-top: 20px; text-align: center; }
   </style>
 </head>
 <body>
@@ -99,54 +57,40 @@
     <h1>RSVP — Darnelle & Donovan</h1>
     <p>Please confirm your attendance at our wedding</p>
   </header>
-
   <div class="container">
-    <div class="form-group">
-      <label for="name">Enter your full name:</label>
-      <input type="text" id="name" placeholder="Name">
+    <div id="step-name">
+      <div class="form-group">
+        <label for="name">Enter your full name:</label>
+        <input type="text" id="name" placeholder="Name">
+      </div>
+      <button class="btn-primary" onclick="checkGuest()">Send</button>
+      <div id="result" class="result hidden"></div>
     </div>
-    <button class="btn-primary" onclick="checkGuest()">Send</button>
-    <div id="result" class="result hidden"></div>
-
     <form id="select-family-form" class="hidden">
       <label for="family-list">Who will be present with you?</label>
       <div id="family-list"></div>
-      <button class="btn-primary" type="submit">Validate selection</button>
+      <button class="btn-primary" type="submit">Confirmed</button>
     </form>
-
-    <form id="wish-form" class="hidden">
-      <label for="wish">Leave a message for the couple:</label>
-      <textarea id="wish" placeholder="Write your wishes here..."></textarea>
-      <button class="btn-primary" type="submit" id="sendWishBtn">Send</button>
-    </form>
-    <div id="successMsg" class="success hidden">
-      Thank you! You can now download your invitation card and the hotel list below.
+    <div id="confirm-alone" class="hidden" style="margin:20px 0;">
+      <button class="btn-primary" onclick="confirmAlone()">Confirmed</button>
     </div>
     <div id="download-section" class="download-btns hidden">
       <button class="btn-primary" onclick="downloadInvitationPDF()">📄 Download my invitation card</button>
-      <button class="btn-secondary" onclick="downloadHotelsPDF()">🏨 Download the hotel list</button>
+    </div>
+    <div id="successMsg" class="success hidden">
+      Your invitation card is ready!
     </div>
   </div>
-
-  <!-- Hidden Formspree integration -->
-  <form id="hidden-form" action="https://formspree.io/f/xdorqjga" method="POST" class="hidden">
-    <input type="hidden" name="name">
-    <input type="hidden" name="selectedFamily">
-    <input type="hidden" name="wish">
-  </form>
-
   <script>
     const { jsPDF } = window.jspdf;
 
+    // Remplace la liste par tous tes invités
     const guests = [
       {name:"Moraima Lys Colimon", seats:1, family:["Moraima Lys Colimon"]},
-      {name:"Phenite Thermilien", seats:1, family:["Phenite Thermilien"]},
-      {name:"Taelle Chery", seats:1, family:["Taelle Chery"]},
-      {name:"Roseline Pierre", seats:1, family:["Roseline Pierre"]},
       {name:"Berthold Victor", seats:2, family:["Berthold Victor","Keisha Victor"]},
-      // ... complète avec tous les invités !
+      {name:"Roseline Pierre", seats:1, family:["Roseline Pierre"]},
+      // ...etc...
     ];
-
     const hotels = [
       "Hilton Garden Inn Foxborough Patriot Place: 27 patriot place, Foxboro, MA, 02035",
       "Red Roof Inn Plus+ Boston - Mansfield/Foxboro: 60 Forbes Blvd, Mansfield, MA 02048",
@@ -159,30 +103,26 @@
       "Holiday Inn Express and Suites Boston South - Randolph by IHG: 60 Mazzeo Dr, Randolph, MA, 02368",
       "Comfort Inn Randolph – Boston: 1374 N Main Street, Randolph, MA, 02368"
     ];
-
     const weddingDate = "Sunday, December 28, 2025. At 3PM.";
     const churchAddress = "Foxboro SDA Church\n308 Central St, Foxborough, MA 02035, USA";
     const receptionAddress = "769 Washington St, Stoughton, MA 02072, USA";
-
     let currentGuest = null;
 
-    function normalize(str) {
-      return str.trim().toLowerCase();
-    }
+    function normalize(str) { return str.trim().toLowerCase(); }
 
     function checkGuest() {
       const input = document.getElementById("name").value;
       const result = document.getElementById("result");
       const selectFamilyForm = document.getElementById("select-family-form");
       const familyListDiv = document.getElementById("family-list");
-      const wishForm = document.getElementById("wish-form");
+      const confirmAloneDiv = document.getElementById("confirm-alone");
       const downloadSection = document.getElementById("download-section");
       const successMsg = document.getElementById("successMsg");
-
-      // Reset all
+      // Reset
       result.classList.add("hidden");
       selectFamilyForm.classList.add("hidden");
-      wishForm.classList.add("hidden");
+      familyListDiv.innerHTML = "";
+      confirmAloneDiv.classList.add("hidden");
       downloadSection.classList.add("hidden");
       successMsg.classList.add("hidden");
 
@@ -190,29 +130,23 @@
         alert("Please enter a name.");
         return;
       }
-
       const found = guests.find(g => normalize(input) === normalize(g.name));
-      if (found) {
-        currentGuest = found;
-        result.innerHTML = `<strong>${found.name}</strong><br>
-          Seats reserved: ${found.seats}<br>
-          ${found.family.length > 1 ? "Family: <ul class='family-list'>" + found.family.map(m => `<li>${m}</li>`).join("") + "</ul>" : ""}`;
+      if (!found) {
+        result.textContent = "⚠️ Sorry, the name is not on the list.";
         result.classList.remove("hidden");
-
-        // Show family selection only if more than one in family
-        if (found.family.length > 1) {
-          familyListDiv.innerHTML = found.family.map((member, idx) =>
-            `<label><input type="checkbox" name="family-member" value="${member}" checked> ${member}</label><br>`
-          ).join("");
-          selectFamilyForm.classList.remove("hidden");
-        } else {
-          // For single person, auto-select themselves and go straight to wish form
-          currentGuest.selectedFamily = found.family;
-          wishForm.classList.remove("hidden");
-        }
+        return;
+      }
+      currentGuest = found;
+      result.innerHTML = `<strong>${found.name}</strong><br>Seats reserved: ${found.seats}`;
+      result.classList.remove("hidden");
+      // Si plus d'une personne, on propose la liste à cocher
+      if (found.family.length > 1) {
+        familyListDiv.innerHTML = found.family.map(member =>
+          `<label><input type="checkbox" name="family-member" value="${member}" checked> ${member}</label><br>`
+        ).join("");
+        selectFamilyForm.classList.remove("hidden");
       } else {
-        result.innerHTML = "⚠️ Sorry, this name is not on the guest list.";
-        result.classList.remove("hidden");
+        confirmAloneDiv.classList.remove("hidden");
       }
     }
 
@@ -221,59 +155,50 @@
       const checked = Array.from(document.querySelectorAll('input[name="family-member"]:checked')).map(cb => cb.value);
       currentGuest.selectedFamily = checked;
       document.getElementById("select-family-form").classList.add("hidden");
-      document.getElementById("wish-form").classList.remove("hidden");
+      document.getElementById("download-section").classList.remove("hidden");
+      document.getElementById("successMsg").classList.remove("hidden");
     });
 
-    document.getElementById("wish-form").addEventListener("submit", function(e) {
-      e.preventDefault();
-      if (!currentGuest) return;
-      const hiddenForm = document.getElementById("hidden-form");
-      hiddenForm.elements["name"].value = currentGuest.name;
-      hiddenForm.elements["selectedFamily"].value = (currentGuest.selectedFamily || []).join(', ');
-      hiddenForm.elements["wish"].value = document.getElementById("wish").value;
-      fetch(hiddenForm.action, {
-        method: "POST",
-        headers: { "Accept": "application/json" },
-        body: new FormData(hiddenForm)
-      }).then(r => {
-        document.getElementById("successMsg").classList.remove("hidden");
-        document.getElementById("download-section").classList.remove("hidden");
-        document.getElementById("wish-form").classList.add("hidden");
-      });
-    });
+    function confirmAlone() {
+      currentGuest.selectedFamily = [currentGuest.name];
+      document.getElementById("confirm-alone").classList.add("hidden");
+      document.getElementById("download-section").classList.remove("hidden");
+      document.getElementById("successMsg").classList.remove("hidden");
+    }
 
     function downloadInvitationPDF() {
       if (!currentGuest) return;
       const doc = new jsPDF();
       const burgundy = [96,12,12];
+
       doc.setFillColor(...burgundy);
       doc.rect(0,0,210,40,"F");
+
       doc.setFontSize(22);
       doc.setTextColor(255,255,255);
       doc.text("Darnelle & Donovan", 105, 25, {align:"center"});
+
       doc.setTextColor(...burgundy);
       doc.setFontSize(18);
       doc.text("Invitation Card", 105, 60, {align:"center"});
+
       doc.setFontSize(14);
       doc.setTextColor(0,0,0);
       doc.text(`Guest: ${currentGuest.name}`, 20, 80);
       doc.text(`Seats reserved: ${currentGuest.seats}`, 20, 95);
+
       if (currentGuest.selectedFamily && currentGuest.selectedFamily.length > 0) {
         doc.text("Confirmed Present:", 20, 110);
         currentGuest.selectedFamily.forEach((m,i) => {
           doc.text(`- ${m}`, 30, 120 + i*10);
         });
-      } else if (currentGuest.family.length > 1) {
-        doc.text("Family:", 20, 110);
-        currentGuest.family.forEach((m,i) => {
-          doc.text(`- ${m}`, 30, 120 + i*10);
-        });
       }
       // Wedding details
-      let y = 140 + ((currentGuest.selectedFamily ? currentGuest.selectedFamily.length : currentGuest.family.length) * 10);
+      let y = 140 + ((currentGuest.selectedFamily ? currentGuest.selectedFamily.length : 0) * 10);
       doc.setFontSize(13);
       doc.setTextColor(...burgundy);
       doc.text("Wedding Details:", 20, y);
+
       doc.setFontSize(12);
       doc.setTextColor(0,0,0);
       doc.text(`Date & Time: ${weddingDate}`, 20, y+12);
@@ -281,11 +206,13 @@
       doc.text(churchAddress, 25, y+30);
       doc.text("Reception Address:", 20, y+42);
       doc.text(receptionAddress, 25, y+50);
+
       // Hotels
       y += 70;
       doc.setFontSize(13);
       doc.setTextColor(...burgundy);
       doc.text("Hotel Suggestions (guests are responsible for their own booking):", 20, y);
+
       doc.setFontSize(11);
       doc.setTextColor(0,0,0);
       let hotelY = y + 12;
@@ -294,21 +221,8 @@
         doc.text(`- ${h}`, 22, hotelY, {maxWidth:170});
         hotelY += 8;
       });
-      doc.save(`Invitation_${currentGuest.name}.pdf`);
-    }
 
-    function downloadHotelsPDF() {
-      const doc = new jsPDF();
-      const burgundy = [96,12,12];
-      doc.setFontSize(18);
-      doc.setTextColor(...burgundy);
-      doc.text("Hotel Suggestions", 105, 20, {align:"center"});
-      doc.setFontSize(12);
-      doc.setTextColor(0,0,0);
-      hotels.forEach((h, i) => {
-        doc.text(`- ${h}`, 20, 35 + i*10, {maxWidth:170});
-      });
-      doc.save("Hotels_List.pdf");
+      doc.save(`Invitation_${currentGuest.name}.pdf`);
     }
   </script>
 </body>
