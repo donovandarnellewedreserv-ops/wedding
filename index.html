@@ -275,40 +275,4 @@
       doc.text(`Guest: ${currentGuest.name}`, 20, 80);
       // Affiche le nombre de personnes sélectionnées
       const nb = currentGuest.selectedFamily ? currentGuest.selectedFamily.length : 1;
-      doc.text(`Seats reserved: ${nb}`, 20, 95);
-      if (currentGuest.selectedFamily && currentGuest.selectedFamily.length > 0) {
-        doc.text("Confirmed Present:", 20, 110);
-        currentGuest.selectedFamily.forEach((m,i) => {
-          doc.text(`- ${m}`, 30, 120 + i*10);
-        });
-      }
-      // Wedding details
-      let y = 140 + (nb * 10);
-      doc.setFontSize(13);
-      doc.setTextColor(...burgundy);
-      doc.text("Wedding Details:", 20, y);
-      doc.setFontSize(12);
-      doc.setTextColor(0,0,0);
-      doc.text(`Date & Time: ${weddingDate}`, 20, y+12);
-      doc.text("Church Address:", 20, y+22);
-      doc.text(churchAddress, 25, y+30);
-      doc.text("Reception Address:", 20, y+42);
-      doc.text(receptionAddress, 25, y+50);
-      // Hotels
-      y += 70;
-      doc.setFontSize(13);
-      doc.setTextColor(...burgundy);
-      doc.text("Hotel Suggestions (guests are responsible for their own booking):", 20, y);
-      doc.setFontSize(11);
-      doc.setTextColor(0,0,0);
-      let hotelY = y + 12;
-      hotels.forEach((h, i) => {
-        if (hotelY > 280) { doc.addPage(); hotelY = 20; }
-        doc.text(`- ${h}`, 22, hotelY, {maxWidth:170});
-        hotelY += 8;
-      });
-      doc.save(`Invitation_${currentGuest.name}.pdf`);
-    }
-  </script>
-</body>
-</html>
+      doc.text(`Seats reserved: ${nb
