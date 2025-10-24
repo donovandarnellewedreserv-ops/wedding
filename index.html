@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RSVP - Darnelle & Donovan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+    header {
+      background: #600C0C;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      transition: 0.3s;
+    }
+    .btn-primary {
+      background: #6B7B59;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #556645;
+    }
+    .btn-secondary {
+      background: #600C0C;
+      color: white;
+    }
+    .btn-secondary:hover {
+      background: #400808;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #f1f1f1;
+    }
+    .family-list {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    .hidden { display: none; }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .success {
+      color: #2a7a2a;
+      font-weight: bold;
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>RSVP — Darnelle & Donovan</h1>
+    <p>Please confirm your attendance at our wedding</p>
+  </header>
+
+  <div class="container">
+    <div class="form-group">
+      <label for="name">Enter your full name:</label>
+      <input type="text" id="name" placeholder="Name">
+    </div>
+    <button class="btn-primary" onclick="checkGuest()">Send</button>
+    <div id="result" class="result hidden"></div>
+
+    <div id="confirm" class="hidden">
+      <p>Do you confirm your attendance?</p>
+      <button class="btn-primary" onclick="confirmAttendance(true)">YES, I will attend</button>
+      <button class="btn-secondary" onclick="confirmAttendance(false)">NO, unfortunately I won’t</button>
+    </div>
+
+    <form id="wish-form" class="hidden">
+      <label for="wish">Leave a message for the couple:</label>
+      <textarea id="wish" placeholder="Write your wishes here..."></textarea>
+      <button class="btn-primary" type="submit" id="sendWishBtn">Send my wishes</button>
+    </form>
+    <div id="successMsg" class="success hidden">
+      Your wishes have been sent. You can now download your reservation card below.
+    </div>
+    <div id="download-section" class="hidden">
+      <button class="btn-primary" onclick="downloadPDF()">📄 Download my reservation card</button>
+    </div>
+  </div>
+
+  <!-- Hidden Formspree integration -->
+  <form id="hidden-form" action="https://formspree.io/f/xdorqjga" method="POST" class="hidden">
+    <input type="hidden" name="name">
+    <input type="hidden" name="attendance">
+    <input type="hidden" name="wish">
+  </form>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+
+    // Updated guest list (added/updated entries as requested)
+    const guests = [
+      {name:"Moraima Lys Colimon", seats:1, family:["Moraima Lys Colimon"]},
+      {name:"Phenite Thermilien", seats:1, family:["Phenite Thermilien"]},
+      {name:"Taelle Chery", seats:1, family:["Taelle Chery"]},
+      {name:"Roseline Pierre", seats:1, family:["Roseline Pierre"]},
+      {name:"Berthold Victor", seats:2, family:["Berthold Victor","Keisha Victor"]}, // updated to 2
+      {name:"Balnave Sarette", seats:4, family:["Marie Fiance Sarette","Mehola Sarette","Noah Sarette","Balnave Sarette"]},
+      {name:"Marah Mondesir", seats:1, family:["Marah Mondesir"]},
+      {name:"Bebeto Labady", seats:2, family:["Bebeto Labady","Naomie Labady"]},
+      {name:"Sebastien Pierre", seats:1, family:["Sebastien Pierre"]},
+      {name:"Judith Sanon", seats:3, family:["Marvein Sanon","Miguel Sanon","Judith Sanon"]},
+      {name:"Erland Sanon", seats:2, family:["Erland Sanon","Paulaine Sanon"]}, // corrected to include Paulaine
+      {name:"Melchior Cyprien", seats:2, family:["Melchior Cyprien","Erna Cyprien"]},
+      {name:"Nezilia Cayard", seats:1, family:["Nezilia Cayard"]},
+      {name:"Nery Cayard", seats:1, family:["Nery Cayard"]},
+      {name:"Yolette Beauvoir", seats:2, family:["Beauvoir Duthil","Yolette Duthil"]},
+      {name:"Evein Durandis", seats:2, family:["Perette Durandis","Evein Durandis"]},
+      {name:"Renel Durandis", seats:4, family:["Renel Durandis","Gessie Durandis","Jason Durandis","Joana Durandis"]},
+      {name:"Rose Gaensly Extrat", seats:1, family:["Rose Gaensly Extrat"]},
+      {name:"Nelly Begein", seats:1, family:["Nelly Begein"]},
+      {name:"Richard Begein", seats:4, family:["Richard Begein","Angeline Begein","Ivan Begein","Jonathan Begein"]},
+      {name:"Saul Lelene", seats:2, family:["Saul Lelene","Saul Michelet"]},
+      {name:"Grandma Tessier", seats:1, family:["Grandma Tessier"]},
+      {name:"Marjorie Samedi", seats:2, family:["Marjorie Samedi","Jaelle Samedy"]},
+      {name:"Daniel Samedi", seats:2, family:["Daniel Samedi","Jasmine Samedi"]},
+      {name:"Jean Edward Cayard", seats:1, family:["Jean Edward Cayard"]},
+      {name:"Marie Josée Turenne", seats:1, family:["Marie Josée Turenne"]},
+      {name:"Raymonde Turenne", seats:1, family:["Raymonde Turenne"]},
+      {name:"Lordure Inera", seats:2, family:["Lordure Inera","Chrislo Inera"]}, // corrected to 2 with Chrislo
+      {name:"Scherly Etienne", seats:2, family:["Scherly Etienne","Bryan Etienne"]},
+      {name:"Perla Mbeya", seats:2, family:["Perla Mbeya","Abram Mbeya"]},
+      {name:"Claude Cayard", seats:1, family:["Claude Cayard"]},
+      {name:"Karly Cayard", seats:1, family:["Karly Cayard"]},
+      {name:"Tamara Cadet", seats:1, family:["Tamara Cadet"]}, // corrected name (was Tamara Cayard)
+      {name:"Myrtha Vieux", seats:1, family:["Myrtha Vieux"]},
+      {name:"Francesca Lima", seats:1, family:["Francesca Lima"]},
+      {name:"Ann Kristel Deronvil", seats:1, family:["Ann Kristel Deronvil"]},
+      {name:"Barbara Pierre", seats:4, family:["Barbara Pierre","Adamael Pierre","Germson Pierre","Maude Marlie Pierre"]},
+      {name:"Jennifer Alexis Ducheine", seats:2, family:["Jennifer Alexis","Le Duc Ducheine"]},
+      {name:"Jude Altenor", seats:1, family:["Jude Altenor"]},
+      {name:"Bidley Beauvin", seats:1, family:["Bidley Beauvin"]},
+      {name:"Jean Esdras", seats:1, family:["Jean Esdras"]},
+      {name:"Doris Doleyres", seats:1, family:["Doris Doleyres"]},
+      {name:"Marjorie Dimanche", seats:4, family:["Marjorie","Winston","Nathaniel","Aniel"]},
+      {name:"Emmanuella Moyo", seats:2, family:["Christian Moyo","Emmanuella Moyo"]},
+      {name:"Yoletta Duthil", seats:1, family:["Yoletta Duthil"]},
+      {name:"Claire Johnson", seats:4, family:["Claire Johnson","Roger Johnson","Jolie Johnson","Zoé Johnson"]}, // corrected to 4
+      {name:"Tatie Myrlande", seats:1, family:["Tatie Myrlande"]},
+      {name:"Alerte Louis", seats:1, family:["Alerte Louis"]},
+
+      // Newly added entries requested
+      {name:"Myrlande Berlanger", seats:2, family:["Myrlande Berlanger","Myrvine Berlanger"]},
+      {name:"Marie France Halaby", seats:1, family:["Marie France Halaby"]},
+      {name:"Laerte Pierre", seats:1, family:["Laerte Pierre"]},
+      {name:"Richardson Lincy", seats:1, family:["Richardson Lincy"]},
+      {name:"Ketia Vital", seats:1, family:["Ketia Vital"]},
+      {name:"Placide Turenne", seats:1, family:["Placide Turenne"]},
+      {name:"Pierre Hector Turenne", seats:1, family:["Pierre Hector Turenne"]},
+      {name:"Marie Carmelle Biron", seats:1, family:["Marie Carmelle Biron"]},
+      {name:"Daniel Sully", seats:1, family:["Daniel Sully"]},
+      {name:"Stéphane Geneus", seats:1, family:["Stéphane Geneus"]}
+    ];
+
+    // Hotel suggestions
+    const hotels = [
+      "Hilton Garden Inn Foxborough Patriot Place: 27 patriot place, Foxboro, MA, 02035",
+      "Red Roof Inn Plus+ Boston - Mansfield/Foxboro: 60 Forbes Blvd, Mansfield, MA 02048",
+      "Comfort Inn and Suites Plainville – Foxboro: 164 Washington St, Plainville, MA, 02762",
+      "Best Western The Inn at Sharon / Foxboro: 395 Old Post Rd, Sharon, MA, 02067",
+      "Hampton Inn Boston – Norwood: 494 Providence Highway (Rt 1), Norwood, MA, 02062",
+      "Courtyard by Marriott Boston: 300 River Ridge Dr, Norwood, MA, 02062",
+      "Holiday Inn Express Brockton - Boston: 405 West Gate Dr, Brockton, MA, 02301",
+      "Hyatt Place Boston/Braintree: 50 Forbes Rd, Braintree, MA, 02184",
+      "Holiday Inn Express and Suites Boston South - Randolph by IHG: 60 Mazzeo Dr, Randolph, MA, 02368",
+      "Comfort Inn Randolph – Boston: 1374 N Main Street, Randolph, MA, 02368"
+    ];
+
+    // Wedding info
+    const weddingDate = "Sunday, December 28, 2025. At 3PM.";
+    const churchAddress = "Foxboro SDA Church\n308 Central St, Foxborough, MA 02035, USA";
+    const receptionAddress = "769 Washington St, Stoughton, MA 02072, USA";
+
+    let currentGuest = null;
+    let attendanceStatus = null;
+
+    function normalize(str) {
+      return str.trim().toLowerCase();
+    }
+
+    function checkGuest() {
+      const input = document.getElementById("name").value;
+      const result = document.getElementById("result");
+      const confirmBox = document.getElementById("confirm");
+      const wishForm = document.getElementById("wish-form");
+      result.classList.add("hidden");
+      confirmBox.classList.add("hidden");
+      wishForm.classList.add("hidden");
+      document.getElementById("download-section").classList.add("hidden");
+      document.getElementById("successMsg").classList.add("hidden");
+
+      if (!input) {
+        alert("Please enter a name.");
+        return;
+      }
+
+      const found = guests.find(g => normalize(input).includes(normalize(g.name)) || normalize(g.name).includes(normalize(input)));
+
+      if (found) {
+        currentGuest = found;
+        result.innerHTML = `<strong>${found.name}</strong><br>
+          Seats reserved: ${found.seats}<br>
+          ${found.family.length > 1 ? "Family: <ul class='family-list'>" + found.family.map(m => `<li>${m}</li>`).join("") + "</ul>" : ""}`;
+        result.classList.remove("hidden");
+        confirmBox.classList.remove("hidden");
+      } else {
+        result.innerHTML = "⚠️ Sorry, this name is not on the guest list.";
+        result.classList.remove("hidden");
+      }
+    }
+
+    function confirmAttendance(isYes) {
+      if (!currentGuest) return;
+      const wishForm = document.getElementById("wish-form");
+      attendanceStatus = isYes ? "Attending" : "Not attending";
+      wishForm.classList.remove("hidden");
+    }
+
+    document.getElementById("wish-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      if (!currentGuest) return;
+      // Fill hidden form
+      const hiddenForm = document.getElementById("hidden-form");
+      hiddenForm.elements["name"].value = currentGuest.name;
+      hiddenForm.elements["attendance"].value = attendanceStatus;
+      hiddenForm.elements["wish"].value = document.getElementById("wish").value;
+      // Send to Formspree
+      fetch(hiddenForm.action, {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: new FormData(hiddenForm)
+      }).then(r => {
+        document.getElementById("successMsg").classList.remove("hidden");
+        document.getElementById("download-section").classList.remove("hidden");
+        document.getElementById("wish-form").classList.add("hidden");
+      });
+    });
+
+    function downloadPDF() {
+      if (!currentGuest) return;
+      const wish = document.getElementById("wish").value;
+      const doc = new jsPDF();
+      const green = [107,123,89];
+      const burgundy = [96,12,12];
+
+      doc.setFillColor(...burgundy);
+      doc.rect(0,0,210,40,"F");
+
+      doc.setFontSize(22);
+      doc.setTextColor(255,255,255);
+      doc.text("Darnelle & Donovan", 105, 25, {align:"center"});
+
+      doc.setTextColor(...burgundy);
+      doc.setFontSize(18);
+      doc.text("Reservation Card", 105, 60, {align:"center"});
+
+      doc.setFontSize(14);
+      doc.setTextColor(0,0,0);
+      doc.text(`Guest: ${currentGuest.name}`, 20, 80);
+      doc.text(`Seats reserved: ${currentGuest.seats}`, 20, 95);
+
+      if (currentGuest.family.length > 1) {
+        doc.text("Family:", 20, 110);
+        currentGuest.family.forEach((m,i) => {
+          doc.text(`- ${m}`, 30, 120 + i*10);
+        });
+      }
+
+      // Wedding details
+      let y = 140;
+      doc.setFontSize(13);
+      doc.setTextColor(...burgundy);
+      doc.text("Wedding Details:", 20, y);
+
+      doc.setFontSize(12);
+      doc.setTextColor(0,0,0);
+      doc.text(`Date & Time: ${weddingDate}`, 20, y+12);
+      doc.text("Church Address:", 20, y+22);
+      doc.text(churchAddress, 25, y+30);
+      doc.text("Reception Address:", 20, y+42);
+      doc.text(receptionAddress, 25, y+50);
+
+      // Wishes
+      y += 65;
+      if (wish.trim() !== "") {
+        doc.setTextColor(...green);
+        doc.text("Your wishes:", 20, y);
+        doc.setTextColor(0,0,0);
+        doc.setFontSize(12);
+        doc.text(wish, 20, y+10, {maxWidth:170});
+        y += 20;
+      }
+
+      // Hotels
+      doc.setFontSize(13);
+      doc.setTextColor(...burgundy);
+      doc.text("Hotel Suggestions (guests are responsible for their own booking):", 20, y+15);
+
+      doc.setFontSize(11);
+      doc.setTextColor(0,0,0);
+      hotels.forEach((h, i) => {
+        doc.text(`- ${h}`, 22, y+25 + i*7, {maxWidth:170});
+      });
+
+      doc.save(`Reservation_${currentGuest.name}.pdf`);
+    }
+  </script>
+</body>
+</html>
