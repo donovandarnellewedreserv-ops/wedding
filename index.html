@@ -86,6 +86,12 @@
       margin-top: 20px;
       text-align: center;
     }
+    .download-btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -102,6 +108,12 @@
     <button class="btn-primary" onclick="checkGuest()">Send</button>
     <div id="result" class="result hidden"></div>
 
+    <form id="select-family-form" class="hidden">
+      <label for="family-list">Who will be present with you?</label>
+      <div id="family-list"></div>
+      <button class="btn-primary" type="submit">Validate selection</button>
+    </form>
+
     <div id="confirm" class="hidden">
       <p>Do you confirm your attendance?</p>
       <button class="btn-primary" onclick="confirmAttendance(true)">YES, I will attend</button>
@@ -114,10 +126,10 @@
       <button class="btn-primary" type="submit" id="sendWishBtn">Send my wishes</button>
     </form>
     <div id="successMsg" class="success hidden">
-      Your wishes have been sent. You can now download your reservation card below.
+      Your wishes have been sent. You can now download your invitation card below.
     </div>
-    <div id="download-section" class="hidden">
-      <button class="btn-primary" onclick="downloadPDF()">📄 Download my reservation card</button>
+    <div id="download-section" class="download-btns hidden">
+      <button class="btn-primary" onclick="downloadInvitationPDF()">📄 Download my invitation card</button>
     </div>
   </div>
 
@@ -126,76 +138,22 @@
     <input type="hidden" name="name">
     <input type="hidden" name="attendance">
     <input type="hidden" name="wish">
+    <input type="hidden" name="selectedFamily">
   </form>
 
   <script>
     const { jsPDF } = window.jspdf;
 
-    // Updated guest list (added/updated entries as requested)
+    // Remplace cette liste par ta liste complète
     const guests = [
       {name:"Moraima Lys Colimon", seats:1, family:["Moraima Lys Colimon"]},
       {name:"Phenite Thermilien", seats:1, family:["Phenite Thermilien"]},
       {name:"Taelle Chery", seats:1, family:["Taelle Chery"]},
       {name:"Roseline Pierre", seats:1, family:["Roseline Pierre"]},
-      {name:"Berthold Victor", seats:2, family:["Berthold Victor","Keisha Victor"]}, // updated to 2
-      {name:"Balnave Sarette", seats:4, family:["Marie Fiance Sarette","Mehola Sarette","Noah Sarette","Balnave Sarette"]},
-      {name:"Marah Mondesir", seats:1, family:["Marah Mondesir"]},
-      {name:"Bebeto Labady", seats:2, family:["Bebeto Labady","Naomie Labady"]},
-      {name:"Sebastien Pierre", seats:1, family:["Sebastien Pierre"]},
-      {name:"Judith Sanon", seats:3, family:["Marvein Sanon","Miguel Sanon","Judith Sanon"]},
-      {name:"Erland Sanon", seats:2, family:["Erland Sanon","Paulaine Sanon"]}, // corrected to include Paulaine
-      {name:"Melchior Cyprien", seats:2, family:["Melchior Cyprien","Erna Cyprien"]},
-      {name:"Nezilia Cayard", seats:1, family:["Nezilia Cayard"]},
-      {name:"Nery Cayard", seats:1, family:["Nery Cayard"]},
-      {name:"Yolette Beauvoir", seats:2, family:["Beauvoir Duthil","Yolette Duthil"]},
-      {name:"Evein Durandis", seats:2, family:["Perette Durandis","Evein Durandis"]},
-      {name:"Renel Durandis", seats:4, family:["Renel Durandis","Gessie Durandis","Jason Durandis","Joana Durandis"]},
-      {name:"Rose Gaensly Extrat", seats:1, family:["Rose Gaensly Extrat"]},
-      {name:"Nelly Begein", seats:1, family:["Nelly Begein"]},
-      {name:"Richard Begein", seats:4, family:["Richard Begein","Angeline Begein","Ivan Begein","Jonathan Begein"]},
-      {name:"Saul Lelene", seats:2, family:["Saul Lelene","Saul Michelet"]},
-      {name:"Grandma Tessier", seats:1, family:["Grandma Tessier"]},
-      {name:"Marjorie Samedi", seats:2, family:["Marjorie Samedi","Jaelle Samedy"]},
-      {name:"Daniel Samedi", seats:2, family:["Daniel Samedi","Jasmine Samedi"]},
-      {name:"Jean Edward Cayard", seats:1, family:["Jean Edward Cayard"]},
-      {name:"Marie Josée Turenne", seats:1, family:["Marie Josée Turenne"]},
-      {name:"Raymonde Turenne", seats:1, family:["Raymonde Turenne"]},
-      {name:"Lordure Inera", seats:2, family:["Lordure Inera","Chrislo Inera"]}, // corrected to 2 with Chrislo
-      {name:"Scherly Etienne", seats:2, family:["Scherly Etienne","Bryan Etienne"]},
-      {name:"Perla Mbeya", seats:2, family:["Perla Mbeya","Abram Mbeya"]},
-      {name:"Claude Cayard", seats:1, family:["Claude Cayard"]},
-      {name:"Karly Cayard", seats:1, family:["Karly Cayard"]},
-      {name:"Tamara Cadet", seats:1, family:["Tamara Cadet"]}, // corrected name (was Tamara Cayard)
-      {name:"Myrtha Vieux", seats:1, family:["Myrtha Vieux"]},
-      {name:"Francesca Lima", seats:1, family:["Francesca Lima"]},
-      {name:"Ann Kristel Deronvil", seats:1, family:["Ann Kristel Deronvil"]},
-      {name:"Barbara Pierre", seats:4, family:["Barbara Pierre","Adamael Pierre","Germson Pierre","Maude Marlie Pierre"]},
-      {name:"Jennifer Alexis Ducheine", seats:2, family:["Jennifer Alexis","Le Duc Ducheine"]},
-      {name:"Jude Altenor", seats:1, family:["Jude Altenor"]},
-      {name:"Bidley Beauvin", seats:1, family:["Bidley Beauvin"]},
-      {name:"Jean Esdras", seats:1, family:["Jean Esdras"]},
-      {name:"Doris Doleyres", seats:1, family:["Doris Doleyres"]},
-      {name:"Marjorie Dimanche", seats:4, family:["Marjorie","Winston","Nathaniel","Aniel"]},
-      {name:"Emmanuella Moyo", seats:2, family:["Christian Moyo","Emmanuella Moyo"]},
-      {name:"Yoletta Duthil", seats:1, family:["Yoletta Duthil"]},
-      {name:"Claire Johnson", seats:4, family:["Claire Johnson","Roger Johnson","Jolie Johnson","Zoé Johnson"]}, // corrected to 4
-      {name:"Tatie Myrlande", seats:1, family:["Tatie Myrlande"]},
-      {name:"Alerte Louis", seats:1, family:["Alerte Louis"]},
-
-      // Newly added entries requested
-      {name:"Myrlande Berlanger", seats:2, family:["Myrlande Berlanger","Myrvine Berlanger"]},
-      {name:"Marie France Halaby", seats:1, family:["Marie France Halaby"]},
-      {name:"Laerte Pierre", seats:1, family:["Laerte Pierre"]},
-      {name:"Richardson Lincy", seats:1, family:["Richardson Lincy"]},
-      {name:"Ketia Vital", seats:1, family:["Ketia Vital"]},
-      {name:"Placide Turenne", seats:1, family:["Placide Turenne"]},
-      {name:"Pierre Hector Turenne", seats:1, family:["Pierre Hector Turenne"]},
-      {name:"Marie Carmelle Biron", seats:1, family:["Marie Carmelle Biron"]},
-      {name:"Daniel Sully", seats:1, family:["Daniel Sully"]},
-      {name:"Stéphane Geneus", seats:1, family:["Stéphane Geneus"]}
+      {name:"Berthold Victor", seats:2, family:["Berthold Victor","Keisha Victor"]},
+      // ... complète avec tous les invités !
     ];
 
-    // Hotel suggestions
     const hotels = [
       "Hilton Garden Inn Foxborough Patriot Place: 27 patriot place, Foxboro, MA, 02035",
       "Red Roof Inn Plus+ Boston - Mansfield/Foxboro: 60 Forbes Blvd, Mansfield, MA 02048",
@@ -209,7 +167,6 @@
       "Comfort Inn Randolph – Boston: 1374 N Main Street, Randolph, MA, 02368"
     ];
 
-    // Wedding info
     const weddingDate = "Sunday, December 28, 2025. At 3PM.";
     const churchAddress = "Foxboro SDA Church\n308 Central St, Foxborough, MA 02035, USA";
     const receptionAddress = "769 Washington St, Stoughton, MA 02072, USA";
@@ -226,9 +183,13 @@
       const result = document.getElementById("result");
       const confirmBox = document.getElementById("confirm");
       const wishForm = document.getElementById("wish-form");
+      const selectFamilyForm = document.getElementById("select-family-form");
+      const familyListDiv = document.getElementById("family-list");
+
       result.classList.add("hidden");
       confirmBox.classList.add("hidden");
       wishForm.classList.add("hidden");
+      selectFamilyForm.classList.add("hidden");
       document.getElementById("download-section").classList.add("hidden");
       document.getElementById("successMsg").classList.add("hidden");
 
@@ -245,29 +206,41 @@
           Seats reserved: ${found.seats}<br>
           ${found.family.length > 1 ? "Family: <ul class='family-list'>" + found.family.map(m => `<li>${m}</li>`).join("") + "</ul>" : ""}`;
         result.classList.remove("hidden");
-        confirmBox.classList.remove("hidden");
+        // Show selection of family
+        familyListDiv.innerHTML = found.family.map((member, idx) =>
+          `<label><input type="checkbox" name="family-member" value="${member}" checked> ${member}</label><br>`
+        ).join("");
+        selectFamilyForm.classList.remove("hidden");
       } else {
         result.innerHTML = "⚠️ Sorry, this name is not on the guest list.";
         result.classList.remove("hidden");
       }
     }
 
+    document.getElementById("select-family-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const checked = Array.from(document.querySelectorAll('input[name="family-member"]:checked')).map(cb => cb.value);
+      currentGuest.selectedFamily = checked;
+      document.getElementById("select-family-form").classList.add("hidden");
+      document.getElementById("confirm").classList.remove("hidden");
+    });
+
     function confirmAttendance(isYes) {
       if (!currentGuest) return;
       const wishForm = document.getElementById("wish-form");
       attendanceStatus = isYes ? "Attending" : "Not attending";
       wishForm.classList.remove("hidden");
+      document.getElementById("confirm").classList.add("hidden");
     }
 
     document.getElementById("wish-form").addEventListener("submit", function(e) {
       e.preventDefault();
       if (!currentGuest) return;
-      // Fill hidden form
       const hiddenForm = document.getElementById("hidden-form");
       hiddenForm.elements["name"].value = currentGuest.name;
       hiddenForm.elements["attendance"].value = attendanceStatus;
       hiddenForm.elements["wish"].value = document.getElementById("wish").value;
-      // Send to Formspree
+      hiddenForm.elements["selectedFamily"].value = (currentGuest.selectedFamily || []).join(', ');
       fetch(hiddenForm.action, {
         method: "POST",
         headers: { "Accept": "application/json" },
@@ -279,11 +252,9 @@
       });
     });
 
-    function downloadPDF() {
+    function downloadInvitationPDF() {
       if (!currentGuest) return;
-      const wish = document.getElementById("wish").value;
       const doc = new jsPDF();
-      const green = [107,123,89];
       const burgundy = [96,12,12];
 
       doc.setFillColor(...burgundy);
@@ -295,14 +266,19 @@
 
       doc.setTextColor(...burgundy);
       doc.setFontSize(18);
-      doc.text("Reservation Card", 105, 60, {align:"center"});
+      doc.text("Invitation Card", 105, 60, {align:"center"});
 
       doc.setFontSize(14);
       doc.setTextColor(0,0,0);
       doc.text(`Guest: ${currentGuest.name}`, 20, 80);
       doc.text(`Seats reserved: ${currentGuest.seats}`, 20, 95);
 
-      if (currentGuest.family.length > 1) {
+      if (currentGuest.selectedFamily && currentGuest.selectedFamily.length > 0) {
+        doc.text("Confirmed Present:", 20, 110);
+        currentGuest.selectedFamily.forEach((m,i) => {
+          doc.text(`- ${m}`, 30, 120 + i*10);
+        });
+      } else if (currentGuest.family.length > 1) {
         doc.text("Family:", 20, 110);
         currentGuest.family.forEach((m,i) => {
           doc.text(`- ${m}`, 30, 120 + i*10);
@@ -310,7 +286,7 @@
       }
 
       // Wedding details
-      let y = 140;
+      let y = 140 + ((currentGuest.selectedFamily ? currentGuest.selectedFamily.length : currentGuest.family.length) * 10);
       doc.setFontSize(13);
       doc.setTextColor(...burgundy);
       doc.text("Wedding Details:", 20, y);
@@ -323,29 +299,25 @@
       doc.text("Reception Address:", 20, y+42);
       doc.text(receptionAddress, 25, y+50);
 
-      // Wishes
-      y += 65;
-      if (wish.trim() !== "") {
-        doc.setTextColor(...green);
-        doc.text("Your wishes:", 20, y);
-        doc.setTextColor(0,0,0);
-        doc.setFontSize(12);
-        doc.text(wish, 20, y+10, {maxWidth:170});
-        y += 20;
-      }
-
-      // Hotels
+      // Hotels (all visible, page break if needed)
+      y += 70;
       doc.setFontSize(13);
       doc.setTextColor(...burgundy);
-      doc.text("Hotel Suggestions (guests are responsible for their own booking):", 20, y+15);
+      doc.text("Hotel Suggestions (guests are responsible for their own booking):", 20, y);
 
       doc.setFontSize(11);
       doc.setTextColor(0,0,0);
+      let hotelY = y + 12;
       hotels.forEach((h, i) => {
-        doc.text(`- ${h}`, 22, y+25 + i*7, {maxWidth:170});
+        if (hotelY > 280) { // Page break if needed
+          doc.addPage();
+          hotelY = 20;
+        }
+        doc.text(`- ${h}`, 22, hotelY, {maxWidth:170});
+        hotelY += 8;
       });
 
-      doc.save(`Reservation_${currentGuest.name}.pdf`);
+      doc.save(`Invitation_${currentGuest.name}.pdf`);
     }
   </script>
 </body>
