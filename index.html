@@ -84,13 +84,27 @@
   <script>
     const { jsPDF } = window.jspdf;
 
-    // Remplace la liste par tous tes invités
+    // Liste des invités complète avec les ajouts demandés
     const guests = [
       {name:"Moraima Lys Colimon", seats:1, family:["Moraima Lys Colimon"]},
       {name:"Berthold Victor", seats:2, family:["Berthold Victor","Keisha Victor"]},
       {name:"Roseline Pierre", seats:1, family:["Roseline Pierre"]},
-      // ...etc...
+      // --- AJOUTS DEMANDÉS ---
+      {name:"Guirlaine Saul", seats:5, family:["Guirlaine Saul","Michelet Saul","Mitch Saul","Jenny Saul","Carmelite Tessier"]},
+      {name:"Daniel Samedi", seats:4, family:["Daniel Samedi","Jasmine Samedi","Dorlane Samedi","Manuela Samedi"]},
+      {name:"Sabrina Samedi", seats:4, family:["Sabrina Samedi","Triniti Samedi","Guimayca Samedi","Sarah Samedi"]},
+      {name:"Jean Marie Samedi", seats:3, family:["Jean Marie Samedi","Nathalie Samedi","Nathaniel Leon"]},
+      {name:"Maillejory Samedi", seats:2, family:["Maillejory Samedi","Jaelle Samedi"]},
+      {name:"Richard Bégein", seats:6, family:["Richard Bégein","Angeline Bégein","Nelly Bégein","Jonathan","Ivan","Cacou"]},
+      {name:"Emmanuel Samedi", seats:3, family:["Emmanuel Samedi","Nathan Samedi","Carl Samedi"]},
+      {name:"Mr & Mme Cherichel", seats:2, family:["Myrtho Cherichel","Mr Cherichel"]},
+      {name:"Rolph Alain Duthil", seats:1, family:["Rolph Alain Duthil"]},
+      {name:"Florence Sully", seats:2, family:["Florence Sully","Frantz Sully"]},
+      {name:"Stéphane Geneus", seats:1, family:["Stéphane Geneus"]},
+      // --- FIN AJOUTS DEMANDÉS ---
+      // ...ajoute ici le reste de ta liste originale !
     ];
+
     const hotels = [
       "Hilton Garden Inn Foxborough Patriot Place: 27 patriot place, Foxboro, MA, 02035",
       "Red Roof Inn Plus+ Boston - Mansfield/Foxboro: 60 Forbes Blvd, Mansfield, MA 02048",
