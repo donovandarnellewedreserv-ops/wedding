@@ -80,16 +80,19 @@
     <div id="successMsg" class="success hidden">
       Your invitation card is ready!
     </div>
+    <!-- Formspree hidden form for email notification -->
+    <form id="hidden-form" action="https://formspree.io/f/xdorqjga" method="POST" class="hidden">
+      <input type="hidden" name="name">
+      <input type="hidden" name="presentList">
+    </form>
   </div>
   <script>
     const { jsPDF } = window.jspdf;
 
-    // Liste des invités complète avec les ajouts demandés
     const guests = [
       {name:"Moraima Lys Colimon", seats:1, family:["Moraima Lys Colimon"]},
       {name:"Berthold Victor", seats:2, family:["Berthold Victor","Keisha Victor"]},
       {name:"Roseline Pierre", seats:1, family:["Roseline Pierre"]},
-      // --- AJOUTS DEMANDÉS ---
       {name:"Guirlaine Saul", seats:5, family:["Guirlaine Saul","Michelet Saul","Mitch Saul","Jenny Saul","Carmelite Tessier"]},
       {name:"Daniel Samedi", seats:4, family:["Daniel Samedi","Jasmine Samedi","Dorlane Samedi","Manuela Samedi"]},
       {name:"Sabrina Samedi", seats:4, family:["Sabrina Samedi","Triniti Samedi","Guimayca Samedi","Sarah Samedi"]},
@@ -101,8 +104,7 @@
       {name:"Rolph Alain Duthil", seats:1, family:["Rolph Alain Duthil"]},
       {name:"Florence Sully", seats:2, family:["Florence Sully","Frantz Sully"]},
       {name:"Stéphane Geneus", seats:1, family:["Stéphane Geneus"]},
-      // --- FIN AJOUTS DEMANDÉS ---
-      // ...ajoute ici le reste de ta liste originale !
+      // ...ajoute les autres invités ici...
     ];
 
     const hotels = [
@@ -117,6 +119,7 @@
       "Holiday Inn Express and Suites Boston South - Randolph by IHG: 60 Mazzeo Dr, Randolph, MA, 02368",
       "Comfort Inn Randolph – Boston: 1374 N Main Street, Randolph, MA, 02368"
     ];
+
     const weddingDate = "Sunday, December 28, 2025. At 3PM.";
     const churchAddress = "Foxboro SDA Church\n308 Central St, Foxborough, MA 02035, USA";
     const receptionAddress = "769 Washington St, Stoughton, MA 02072, USA";
@@ -153,10 +156,10 @@
       currentGuest = found;
       result.innerHTML = `<strong>${found.name}</strong><br>Seats reserved: ${found.seats}`;
       result.classList.remove("hidden");
-      // Si plus d'une personne, on propose la liste à cocher
+      // Affichage des cases à cocher NON cochées par défaut
       if (found.family.length > 1) {
         familyListDiv.innerHTML = found.family.map(member =>
-          `<label><input type="checkbox" name="family-member" value="${member}" checked> ${member}</label><br>`
+          `<label><input type="checkbox" name="family-member" value="${member}"> ${member}</label><br>`
         ).join("");
         selectFamilyForm.classList.remove("hidden");
       } else {
@@ -164,17 +167,41 @@
       }
     }
 
+    // Envoi email + carte dispo après confirmation (groupe)
     document.getElementById("select-family-form").addEventListener("submit", function(e) {
       e.preventDefault();
       const checked = Array.from(document.querySelectorAll('input[name="family-member"]:checked')).map(cb => cb.value);
       currentGuest.selectedFamily = checked;
+
+      // ENVOI VERS FORMSPREE
+      const hiddenForm = document.getElementById("hidden-form");
+      hiddenForm.elements["name"].value = currentGuest.name;
+      hiddenForm.elements["presentList"].value = checked.join(', ');
+      fetch(hiddenForm.action, {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: new FormData(hiddenForm)
+      });
+
       document.getElementById("select-family-form").classList.add("hidden");
       document.getElementById("download-section").classList.remove("hidden");
       document.getElementById("successMsg").classList.remove("hidden");
     });
 
+    // Envoi email + carte dispo après confirmation (seul)
     function confirmAlone() {
       currentGuest.selectedFamily = [currentGuest.name];
+
+      // ENVOI VERS FORMSPREE
+      const hiddenForm = document.getElementById("hidden-form");
+      hiddenForm.elements["name"].value = currentGuest.name;
+      hiddenForm.elements["presentList"].value = currentGuest.name;
+      fetch(hiddenForm.action, {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: new FormData(hiddenForm)
+      });
+
       document.getElementById("confirm-alone").classList.add("hidden");
       document.getElementById("download-section").classList.remove("hidden");
       document.getElementById("successMsg").classList.remove("hidden");
@@ -184,23 +211,20 @@
       if (!currentGuest) return;
       const doc = new jsPDF();
       const burgundy = [96,12,12];
-
       doc.setFillColor(...burgundy);
       doc.rect(0,0,210,40,"F");
-
       doc.setFontSize(22);
       doc.setTextColor(255,255,255);
       doc.text("Darnelle & Donovan", 105, 25, {align:"center"});
-
       doc.setTextColor(...burgundy);
       doc.setFontSize(18);
       doc.text("Invitation Card", 105, 60, {align:"center"});
-
       doc.setFontSize(14);
       doc.setTextColor(0,0,0);
       doc.text(`Guest: ${currentGuest.name}`, 20, 80);
-      doc.text(`Seats reserved: ${currentGuest.seats}`, 20, 95);
-
+      // Affiche le nombre de personnes sélectionnées
+      const nb = currentGuest.selectedFamily ? currentGuest.selectedFamily.length : 1;
+      doc.text(`Seats reserved: ${nb}`, 20, 95);
       if (currentGuest.selectedFamily && currentGuest.selectedFamily.length > 0) {
         doc.text("Confirmed Present:", 20, 110);
         currentGuest.selectedFamily.forEach((m,i) => {
@@ -208,11 +232,10 @@
         });
       }
       // Wedding details
-      let y = 140 + ((currentGuest.selectedFamily ? currentGuest.selectedFamily.length : 0) * 10);
+      let y = 140 + (nb * 10);
       doc.setFontSize(13);
       doc.setTextColor(...burgundy);
       doc.text("Wedding Details:", 20, y);
-
       doc.setFontSize(12);
       doc.setTextColor(0,0,0);
       doc.text(`Date & Time: ${weddingDate}`, 20, y+12);
@@ -220,13 +243,11 @@
       doc.text(churchAddress, 25, y+30);
       doc.text("Reception Address:", 20, y+42);
       doc.text(receptionAddress, 25, y+50);
-
       // Hotels
       y += 70;
       doc.setFontSize(13);
       doc.setTextColor(...burgundy);
       doc.text("Hotel Suggestions (guests are responsible for their own booking):", 20, y);
-
       doc.setFontSize(11);
       doc.setTextColor(0,0,0);
       let hotelY = y + 12;
@@ -235,7 +256,6 @@
         doc.text(`- ${h}`, 22, hotelY, {maxWidth:170});
         hotelY += 8;
       });
-
       doc.save(`Invitation_${currentGuest.name}.pdf`);
     }
   </script>
